@@ -1,0 +1,7 @@
+<dependency>
+<groupId>com.sansec</groupId>	
+<artifactId>shca.jar</artifactId>
+<version>1.6</version>
+<scope>system</scope>
+<systemPath>${basedir}/lib/shca.1.6.jar</systemPath>	
+</dependency> 	
