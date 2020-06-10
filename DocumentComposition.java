@@ -1,4 +1,4 @@
-package com.dianju.signatureServer;
+﻿package com.dianju.signatureServer;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dianju.core.LicenseConfig;
@@ -1747,9 +1747,10 @@ public class DocumentComposition {
                 /*3.base64方式传入*/
                 String fileSuffix = FILE_SUFFIX;
 
-                String fname = fileId + "-" + new Date().getTime() + fileSuffix;
-                String saveFilePath = Util.getSystemDictionary("upload_path") + "/downPathHttp/" + fname;
-
+                String fname = fileId + "-" + new Date().getTime() +"."+ fileSuffix;
+                String download = Util.getSystemDictionary("upload_path") + "/download/";
+                Util.createDires(download);
+                String saveFilePath=Util.getSuffixFolder(download,Util.getYYYYMMDDHH())+fname;
                 Util.base64ToFile(FILE_PATH, saveFilePath);
                 filePaths.put("fileUrl", saveFilePath);
                 filePaths.put("fileName", fname);
@@ -1879,7 +1880,6 @@ public class DocumentComposition {
             } finally {
                 log.info(fileId + ":验证完成");
                 documentCreating.saveFile(nObjID, "", FILE_SUFFIX, 0);
-                Util.deleteFile((String) filePaths.get("fileUrl"));
             }
         } catch (DocumentException e) {
             return getPdfVarifyReturnXml(retXmlType, null, e.getMessage(), "0", fileId, null, null, operationType);
@@ -2910,11 +2910,10 @@ public class DocumentComposition {
      */
     private String getSealFromCertDnOrSnReturnXml(Map map, String beginTime, String... checkMsg) {
         String retXml = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
-                + "<SEAL_INFOR_RESPONSE>";
+                + "<SEAL_INFOR_RESPONSE><SEAL_LIST>";
         String msg = "";
         if (checkMsg.length == 0) {
             Iterator iterator = map.values().iterator();
-            msg += "<SEAL_LIST>";
             while (iterator.hasNext()) {
                 Map m = (Map) iterator.next();
                 msg += "<SEAL>" +
@@ -2925,12 +2924,15 @@ public class DocumentComposition {
                         "</SEAL>";
             }
         } else {
-            msg += "<SEAL_LIST><RET_CODE>" + 0 + "</RET_CODE>" + "<RET_MSG>" + checkMsg[0] + "</RET_MSG>"
-                    + "</SEAL_LIST>";
+            msg += "<RET_CODE>" + 0 + "</RET_CODE>" + "<RET_MSG>" + checkMsg[0] + "</RET_MSG>";
         }
-        msg += "</SEAL_LIST>";
-        retXml += msg
-                + "</SEAL_INFOR_RESPONSE>";
+        if(StringUtils.isNotEmpty("msg")){
+            retXml += msg
+                    + "</SEAL_LIST></SEAL_INFOR_RESPONSE>";
+        }else{
+            retXml += "<RET_CODE>1</RET_CODE><RET_MSG>此证书未绑定证书</RET_MSG></SEAL_LIST></SEAL_INFOR_RESPONSE>";
+        }
+
         return retXml;
     }
 
@@ -3040,41 +3042,23 @@ public class DocumentComposition {
                 ShouYePageContent shouYePageContent = new ShouYePageContent();//首页
                 List<XuYePageContent> xuyepageContentList = null;//续页
                 WeiYePageContent weiyePageContent = null;//尾页
-                Element baseData = rootElement.element("BASE_DATA");
-                String sysId = baseData.element("SYS_ID").getText();
-                dJFapiaoObj.setSysId(sysId);
+
                 Element eInvoice = rootElement.element("EINVOICE");
                 //dJFapiaoObj.setOriginal_invoice(xmlStr);
                 dJFapiaoObj.setOriginal_invoice(replaceXml(xmlStr));
                 Element docIDElement= eInvoice.element("DocID");
-                // String DocID = eInvoice.element("DocID").getText();//docid
+               // String DocID = eInvoice.element("DocID").getText();//docid
                 if(docIDElement!=null){
                     dJFapiaoObj.setDocID(docIDElement.getText());
                 }
                 String piaoTou = eInvoice.element("piaoTou").getText();//票头
                 dJFapiaoObj.setPiaoTou(piaoTou);
-                String inVoiceCode = "";//发票代码
-                Element inVoiceCodeElement = eInvoice.element("InvoiceCode");//发票代码
-                if(inVoiceCodeElement!=null){
-                    inVoiceCode = inVoiceCodeElement.getText();
-                    shouYePageContent.setInvoiceCode(inVoiceCode);
-                }else{
-                    return getElectronicReturnXml(null, "", "发票代码为空");
-                }
+                String inVoiceCode = eInvoice.element("InvoiceCode").getText();//发票代码
+                shouYePageContent.setInvoiceCode(inVoiceCode);
                 String inVoiceNo = eInvoice.element("InvoiceNo").getText();//发票号码
                 shouYePageContent.setInvoiceNo(inVoiceNo);
-                Element typeCodeElement= eInvoice.element("TypeCode");
-                if(typeCodeElement!=null){
-                    //String typeCode = typeCodeElement.getText();//
-                    shouYePageContent.setTypeCode(typeCodeElement.getText());
-                }else{
-                    //走不下去了
-                    log.info("缺少typeCode标签, 0-正数发票；1-负数发票 ");
-                    returnXml =getElectronicReturnXml(null, "", "缺少typeCode标签, 0-正数发票；1-负数发票") ;
-                    return getElectronicReturnXml(null, "", "缺少typeCode标签, 0-正数发票；1-负数发票");
-                }
-                /*String typeCode = eInvoice.element("TypeCode")==null?"" : eInvoice.element("TypeCode").getText();//
-                shouYePageContent.setTypeCode(typeCode);*/
+                String typeCode = eInvoice.element("TypeCode")==null?"" : eInvoice.element("TypeCode").getText();//
+                shouYePageContent.setTypeCode(typeCode);
                 String machineNo = eInvoice.element("MachineNo").getText();//机器编码
                 shouYePageContent.setMachineNo(machineNo);
                 String issueDate = eInvoice.element("IssueDate").getText();//开票日期
@@ -3119,7 +3103,7 @@ public class DocumentComposition {
 
                 //String taxInclusiveTotalAmount = eInvoice.element("TaxInclusiveTotalAmount");//价税合计
                 String taxInclusiveTotalAmount="";
-                Element taxInclusiveTotalAmountElement = eInvoice.element("TaxInclusiveTotalAmount");
+                Element   taxInclusiveTotalAmountElement = eInvoice.element("TaxInclusiveTotalAmount");
                 if(taxInclusiveTotalAmountElement!=null){
                     taxInclusiveTotalAmount  =taxInclusiveTotalAmountElement.getText();
                     shouYePageContent.setTaxInclusiveTotalAmount(taxInclusiveTotalAmountElement.getText());
@@ -3132,7 +3116,7 @@ public class DocumentComposition {
                 }
                 //String taxExclusiveTotalAmount = eInvoice.element("TaxExclusiveTotalAmount").getText();//金额
 
-                Element taxTotalAmountElement = eInvoice.element("TaxTotalAmount");
+                Element   taxTotalAmountElement = eInvoice.element("TaxTotalAmount");
                 //String taxTotalAmount = eInvoice.element("TaxTotalAmount").getText();//税额
                 String taxTotalAmount="";
                 if(taxTotalAmountElement!=null){
@@ -3146,8 +3130,8 @@ public class DocumentComposition {
                     shouYePageContent.setNote(note);
                 }
                 String invoiceSIA1 = eInvoice.element("InvoiceSIA1").getText();//InvoiceSIA1
-                String invoiceSIA2 = eInvoice.element("InvoiceSIA2").getText();//InvoiceSIA2
                 shouYePageContent.setInvoiceSIA1(invoiceSIA1);
+                String invoiceSIA2 = eInvoice.element("InvoiceSIA2").getText();//InvoiceSIA2
                 shouYePageContent.setInvoiceSIA2(invoiceSIA2);
                 /***
                  * 如果商品的个数《=8    则不存在续页和尾页
