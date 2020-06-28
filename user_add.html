@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Cache-Control" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="0">
+
+<title>用户添加</title>
+<link rel="stylesheet"
+	href="../../shared/bootstrap/css/bootstrap.min.css" type="text/css" />
+<link rel="stylesheet" href="../../shared/css/index-ess.css"
+	type="text/css" />
+<link rel="stylesheet" href="../../shared/css/font-awesome.min.css"
+	type="text/css" />
+<link rel="stylesheet" href="../../shared/css/document.css"
+	type="text/css" />
+<link rel="stylesheet" href="../../shared/css/dj-bootstrap.css"
+	type="text/css" />
+<link rel="stylesheet" href="../../shared/css/dj-tab.css"
+	type="text/css" />
+<link rel="stylesheet" href="../../shared/css/main.css" type="text/css" />
+<link rel="stylesheet" href="../../shared/bootstrap/css/bootstrap.css"
+	type="text/css" />
+<!-- jqgrid样式 -->
+<link href="../../shared/jqgrid/css/ui.jqgrid.css" type="text/css"
+	rel="stylesheet" />
+<link
+	href="../../shared/jqgrid/css/css/flick/jquery-ui-1.8.16.custom.css"
+	type="text/css" rel="stylesheet" />
+
+
+<!--javascript引用部分 -->
+<script src="../../shared/js/jquery-1.8.3.min.js" type="text/javascript"></script>
+<script src="../../shared/js/jquery.extend.js" type="text/javascript"></script>
+<script src="../../shared/js/myLayer.js" type="text/javascript"></script>
+<script src="../../shared/ztree/js/jquery.ztree.core.min.js"
+	type="text/javascript"></script>
+
+<!-- jqgridjs -->
+<script src="../../shared/jqgrid/js/jquery.jqGrid.src.js"
+	type="text/javascript"></script>
+<script src="../../shared/jqgrid/js/jquery.jqGrid.extend.js"
+	type="text/javascript"></script>
+<script type="text/javascript"
+	src="../../shared/jqgrid/js/i18n/grid.locale-cn.js"></script>
+
+<script src="../../shared/bootstrap/js/bootstrap.min.js"
+	type="text/javascript"></script>
+<script src="../../shared/layer/layer.js" type="text/javascript"></script>
+
+<!-- my97 DatePicker  -->
+<script src="../../shared/my97/WdatePicker.js" type="text/javascript"></script>
+<script src="../../shared/plugins/utils.js" type="text/javascript"></script>
+
+<script src="../../shared/js/jquery.validate.min.js"
+	type="text/javascript"></script>
+<script src="../../shared/js/jquery.additional-methods.js"
+	type="text/javascript"></script>
+<script src="../../shared/crypto-js/crypto-js.js" type="text/javascript"></script>
+<script src="../../shared/ocx/makeseal.js" type="text/javascript"></script>
+	<script src="../../shared/js/json2.js" type="text/javascript"></script>
+</head>
+<style type="text/css">
+.error {
+	color: red;
+}
+
+span {
+	color: red;
+	font-size: 13px;
+}
+
+ul {
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+}
+
+li {
+	margin: 2px;
+	padding: 0 5px;
+	display: inline-block;
+	float: left;
+	font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+	height: 26px;
+	line-height: 25px;
+	border: 1px solid #acacac;
+	border-radius: 3px;
+	background-color: #a1dbff;
+}
+</style>
+<body>
+	<form id="userForm">
+		<input type="hidden" id="id" name="id" /> <input type="hidden"
+			id="createdAt" name="createdAt" /> <input type="hidden"
+			id="createdBy" name="createdBy" /> <input type="hidden"
+			id="pwdUpdatedAt" name="pwdUpdatedAt" /> <input
+			type="hidden" id="lastReadMessageTime" name="lastReadMessageTime" />
+		<input type="hidden" id="currentRole" name="currentRole" /> <input
+			type="hidden" id="certContent" name="certContent" /> <input
+			type="hidden" id="certPublicKey" name="certPublicKey" />
+
+		<table id="userTable"
+			style="font-size: 15px; width: 100%; border: 0px"
+			class="table_insert">
+			<tbody>
+				<tr>
+					<td class="tdtitle" align="right">绑定证书：</td>
+					<td><select id="certificateType" name="certificateType"
+						class="form_input" onchange="certificateTypeChange()">
+							<option value="0">不绑定证书</option>
+							<option value="1">绑定key证书</option>
+							<option value="2">pfx文件证书</option>
+							<option value="3">IE证书</option>
+							<option value="4">Cert证书公钥</option>
+					</select></td>
+				</tr>
+
+				<tr style="display:none" id="certPwdTr">
+					<td class="tdtitle" align="right">pfx路径：</td>
+					<td><input type="file" id="pfxRoad" name="pfxRoad"
+						class="form_input" onchange="selectCertFile('pfxRoad');"></td>
+					<td class="tdtitle" align="right">证书密码：</td>
+					<td><input type="text" id="certPwd" name="certPwd"
+						class="form_input"></td>
+
+				</tr>
+				<tr style="display:none"  id="certRoadTr">
+
+					<td class="tdtitle" align="right">cert路径：</td>
+					<td><input type="file" id="certFile"
+						name="certFile" class="form_input"></td>
+				</tr>
+				<tr style="display:none" id="bundling">
+					<td class="tdtitle" align="right">序列号：</td>
+					<td>
+						<div class="input-append">
+							<input type="text" name="certSn" id="certSn" readonly="readonly">
+							<button type="button" class="btn" onclick="checkCert()">获取证书信息</button>
+						</div> <span id="certMes"></span>
+
+					</td>
+					<td class="tdtitle" align="right">证书DN：</td>
+					<td><input type="text" id="certDn" name="certDn"
+						class="form_input" readonly="readonly"></td>
+				</tr>
+
+				<tr style="display:none" id="validity">
+					<td class="tdtitle" align="right">有效期：</td>
+					<td><input type="text" id="certValidityBegin"
+						name="certValidityBegin" class="form_input" readonly="readonly">
+					</td>
+					<td class="tdtitle" align="right">至：</td>
+					<td><input type="text" id="certValidityEnd"
+						name="certValidityEnd" class="form_input" readonly="readonly">
+					</td>
+				</tr>
+				<tr>
+					<td class="tdtitle must" align="right">用户名：</td>
+					<td><input type="text" id="loginId" name="loginId"
+						class="form_input" placeholder="请输入登录名"
+						onchange="addValidateOptions()" onpause="addValidateOptions()" onblur="addValidateOptions()" > <span id="loginIdMes"></span>
+					</td>
+					<td class="tdtitle must" align="right">姓名：</td>
+					<td><input type="text" id="name" name="name"
+						class="form_input" placeholder="请输入真实姓名" onchange="nameValidate()" onpause="nameValidate()" onblur="nameValidate()">
+						<span id="nameMes"></span></td>
+				</tr>
+
+				<tr>
+					<td class="tdtitle" align="right">性别：</td>
+					<td><input type="radio" name="gender" id="genderMan" value="1"
+						checked="checked" />男 <input type="radio" name="gender"
+						id="genderWoman" value="0" />女</td>
+					<td class="tdtitle  must" align="right">是否启用：</td>
+					<td><input type="radio" name="status" id="statusYes" value="1"
+						checked="checked" />是 <input type="radio" name="status"
+						id="statusNo" value="0" />否</td>
+				</tr>
+				<tr id="pwdTr" hidden="true">
+					<td class="tdtitle  must" align="right">密码：</td>
+					<td><input type="password" id="userPwd"
+						name="userPwd" value="Admin123" class="form_input"
+						placeholder="请输入密码" onchange="passwordValidate()" onpause="passwordValidate()" onblur="passwordValidate()"> <span
+						id="pwdMes">默认初始密码是:Admin123</span></td>
+
+
+					<td class="tdtitle  must" align="right">确认密码：</td>
+					<td><input type="password" id="confirmPwd"
+						name="confirmPwd" value="Admin123" class="form_input"
+						placeholder="请再次输入密码" onchange="confirmPwdValidate()" onpause="confirmPwdValidate()" onblur="confirmPwdValidate()">
+						<span id="confirmPwdMes"></span></td>
+
+				</tr>
+				<tr>
+					<td class="tdtitle  must" align="right">所属部门：</td>
+					<td><input type="hidden" name="departmentId" id="departmentId">
+						<div class="input-append">
+							<input type="text" class="span2" readonly="readonly"
+								name="sectionName" id="sectionName" placeholder="点击选择">
+							<button type="button" class="btn" onclick="selDepartment();">选择</button>
+						</div> <span id="departmentIdMes"></span></td>
+					<td class="tdtitle  must" align="right">角色：</td>
+					<td><input type="hidden" name="userRoles" id="userRoles">
+						<div
+							style="overflow-y: hidden; border: 1px solid #ccc; display: inline-block; width: 240px; height: auto; min-height: 34px;" class="input-append">
+							<ul style="list-style-type: none" id="userRolesName"
+								class="sp-list">
+
+							</ul>
+						</div>
+						<div class="input-append">
+							<button type="button" class="btn" onclick="openSelectRoleModal()" >选择</button>
+						</div> <span id="userRolesMes"></span></td>
+				</tr>
+				<tr>
+					<td class="tdtitle  must" align="right">管理部门：</td>
+					<td>
+						<div style="white-space: nowrap;overflow: scroll hidden;overflow-y: hidden; border: 1px solid #ccc; display: inline-block; width: 240px; height: auto; min-height: 34px;"  class="input-append">						
+							<ul style="list-style-type: none" id="manageDepartmentsName"
+								class="sp-list">
+
+							</ul>
+						</div>
+						<div class="input-append">
+							<button type="button" class="btn"
+								onclick="openSelectManageSectionModal()">选择</button>
+						</div>
+					</td>
+					<td class="tdtitle  must" align="right">客户端类型：</td>
+					<td id="checkboxTd"></td>
+				</tr>
+
+				<tr>
+					<td class="tdtitle" align="right">邮箱：</td>
+					<td><input type="text" id="email" name="email"
+						class="form_input" placeholder="请输入邮箱" value=""
+						onchange="emailValidate()" onpause="emailValidate()" onblur="emailValidate()" > <span id="emailMes"></span></td>
+					<td class="tdtitle" align="right">手机：</td>
+					<td><input type="text" id="mobile" name="mobile"
+						class="form_input" placeholder="请输入手机" value=""
+						onchange="mobileValidate()" onpause="mobileValidate()" onblur="mobileValidate()"> <span id="mobileMes"></span>
+
+					</td>
+				</tr>
+				<tr>
+					<td class="tdtitle" align="right">生日：</td>
+					<td><input type="text" id="birthday" name="birthday"
+						readonly="readonly"
+						onfocus="WdatePicker({skin:'whyGreen',readOnly:true,dateFmt: 'yyyy-MM-dd'})">
+					</td>
+					<td class="tdtitle" align="right">工作电话：</td>
+					<td><input type="text" id="workTelephone" name="workTelephone"
+						class="form_input" placeholder="请输入工作电话" value=""
+						onchange="workTelephoneValidate()" onpause="workTelephoneValidate()" onblur="workTelephoneValidate()" > <span
+						id="workTelephoneMes"></span></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	<div id="getKey" style="dispaly: none;"></div>
+
+</body>
+
+<script type="text/javascript">
+	var urlPath = getUrlPath();
+	var resRole = []; //角色
+	var resDep = {}; //所属部门
+	var restManageSection = []; //管理范围
+
+	var checkUserType = [];
+	
+	var certInfoValitify = {  //证书信息
+		sn : "",
+		dn : "",
+		content : "",
+		beginTime : 0,
+		endTime : 0,
+		error : false,
+		message : null
+	};
+	var certBase64="";
+
+	$(document).ready(function() {
+		//用户初始化数据
+		addDataInit();
+		
+		//初始化加载项
+		initCheckBox();
+	});
+
+	//新增修改初始化数据
+	function addDataInit() {
+		var id = getUrlParam('id');
+		//修改
+		if (id != null) {
+			$("#pwdTr").hide();
+			$
+					.ajax({
+						type : "get",
+						url : urlPath + '/user/' + id+'?noCache=' + new Date().getTime(),
+						contentType : "application/json",
+						dataType : "json",
+						success : function(data) {
+							showTr(data.certificateType); //初始化表单
+
+							$("#id").val(data.id); //id  
+							$("#certificateType").val(data.certificateType);
+
+							$("#loginId").val(data.loginId);
+							$("#name").val(data.name);
+							if (data.gender == "1") {
+								$("#genderMan").attr("checked", "checked");
+								$("#genderWoman").removeAttr("checked");
+							} else {
+								$("#genderWoman").attr("checked", "checked");
+								$("#genderMan").removeAttr("checked");
+							}
+							if (data.status == "1") {
+								$("#statusYes").attr("checked", "checked");
+								$("#statusNo").removeAttr("checked");
+							} else {
+								$("#statusNo").attr("checked", "checked");
+								$("#statusYes").removeAttr("checked");
+							}
+
+							$("#userPwd").val(data.password);
+							$("#confirmPwd").val(data.password);
+
+							$("#email").val(data.email);
+							$("#mobile").val(data.mobile);
+							$("#workTelephone").val(data.workTelephone);
+
+							if (data.birthday == "" || data.birthday == null) {
+								$("#birthday").val(null);
+							} else {
+								$("#birthday").val(
+										(new Date(data.birthday * 1000)
+												.toLocaleString()).substring(0,
+												10));
+							}
+
+							if (data.certValidityEnd == 0
+									|| data.certValidityEnd == null
+									|| data.certValidityEnd == "") {
+								$("#certValidityEnd").val(null);
+							} else {
+								$("#certValidityEnd").val(
+										new Date(data.certValidityEnd * 1000)
+												.toLocaleString());
+							}
+
+							if (data.certValidityBegin == 0
+									|| data.certValidityBegin == null
+									|| data.certValidityBegin == "") {
+								$("#certValidityBegin").val(null);
+							} else {
+								$("#certValidityBegin").val(
+										new Date(data.certValidityBegin * 1000)
+												.toLocaleString());
+							}
+							$("#certDn").val(data.certDn);
+							$("#certSn").val(data.certSn);
+
+							$("#certPublicKey").val(data.certPublicKey);
+
+							$("#departmentId").val(data.departmentId.id);
+							$("#sectionName").val(data.departmentId.name); //用户所属部门name -- view显示	       
+							resDep = {};
+							resDep.id = data.departmentId.id;
+
+							restManageSection = [];
+							var manageDepartments = data.manageDepartments;
+							for (var i = 0; i < manageDepartments.length; i++) {
+								var md = {};
+								md.type = manageDepartments[i].type;
+								md.roleId = manageDepartments[i].roleId.id;
+								md.departmentId = manageDepartments[i].departmentId.id;
+								md.id = generateUUID();
+								restManageSection.push(md);
+
+								if (manageDepartments[i].type == 1) {
+									var dataMd = "<li id=\""+restManageSection[i].id+"\"><span style=\"color:black\">"
+											+ manageDepartments[i].departmentId.name
+											+ "-"
+											+ manageDepartments[i].roleId.name
+											+ "(包含)<a class=\"fa fa-times \" onclick=\"delMdId('"
+											+ restManageSection[i].id
+											+ "')\" ></a></span></li>";
+								} else {
+									var dataMd = "<li id=\""+restManageSection[i].id+"\"><span style=\"color:black\">"
+											+ manageDepartments[i].departmentId.name
+											+ "-"
+											+ manageDepartments[i].roleId.name
+											+ "(不包含)<a class=\"fa fa-times \" onclick=\"delMdId('"
+											+ restManageSection[i].id
+											+ "')\" ></a></span></li>";
+								}
+								$("#manageDepartmentsName").append(dataMd);
+							}
+
+							var userRoles = data.userRoles;
+							for (var j = 0; j < userRoles.length; j++) {
+								var dataRoles = "<li id=\""+userRoles[j].id+"\"><span style=\"color:black\">"
+										+ userRoles[j].name
+										+ "<a class=\"fa fa-times \" onclick=\"delRoleId('"
+										+ userRoles[j].id
+										+ "')\" ></a></span></li>";
+								$("#userRolesName").append(dataRoles);
+								resRole.push(userRoles[j].id);
+							}
+
+							var userType = data.userType;
+
+							$("[name='allUserType']").each(
+									function(index, element) {
+										var e = $(this).val();
+										if ((userType & e) == e && index == 0) {
+											$(":checkbox")
+													.prop("checked", true);
+										} else if ((userType & e) == e
+												&& index != 0) {
+											$(":checkbox[value='" + e + "']")
+													.prop("checked", true);
+										}
+									});
+
+							$("#createdAt").val(data.createdAt);
+							$("#createdBy").val(data.createdBy);
+							$("#pwdUpdatedAt").val(data.pwdUpdatedAt);
+							$("#lastReadMessageTime").val(
+									data.lastReadMessageTime);
+							$("#currentRole").val(data.currentRole);
+
+						},
+
+						error : function(xmlhttp, textStatus, errorThrown) {
+							var o = JSON.parse(xmlhttp.responseText);
+							layer.msg(o.message, {
+								icon : 5
+							});
+						}
+					});
+		} else {
+			$("#pwdTr").show();
+
+			//初始化页面表单中的数据
+			$("#id").val(null); //id
+			$("#userPwd").val('Admin123');
+			$("#confirmPwd").val('Admin123');
+			$("#sectionName").val(null); //用户所属部门name -- view显示	       
+			$("#status").val(1);
+			$("#loginId").val(null);
+			$("#gender").val(1);
+			$("#email").val(null);
+			$("#mobile").val(null);
+			$("#workTelephone").val(null);
+			$("#birthday").val(null);
+			$("#certificateType").val('0');
+			$("#certPwd").val("");
+			$("#certValidityEnd").val("");
+			$("#certValidityBegin").val("");
+			$("#certSn").val("");
+			$("#certDn").val("");
+			$("#birthday").val(null);
+			$("#certContent").val("");
+			$("#lastReadMessageTime").val(0);
+		}
+	}
+	
+	//初始化客户端类型
+	function initCheckBox() {
+		var data = currentUser();
+		var allUserType = data.userType;
+		for (var i = 0; i < allUserType.length; i++) {
+			$("#checkboxTd").append(
+					"<input type='checkbox' name='allUserType' value="+allUserType[i].value+" />"
+							+ allUserType[i].key);
+		}
+	}
+	
+	
+	//获取当前登陆人信息
+	function currentUser() {
+		var userData;
+		$.ajax({
+			type : "GET",
+			data : {},
+			url : urlPath + "/userInfo?noCache=" + new Date().getTime(),
+			dataType : "json",
+			async : false,
+			success : function(data) {
+				//userData位当前登陆人的信息
+				userData = data;
+			},
+			error : function(xmlhttp, textStatus, errorThrown) {
+				alert(($.parseJSON(xmlhttp.responseText)).message);
+			}
+		});
+		return userData;
+	}
+	
+	
+	//选择管理角色
+	function openSelectRoleModal() {
+
+		var index = window.parent.layer
+				.open({
+					title : '指定角色',
+					type : 2,
+					content : '../../module/organization/select-role-modal.html?back='
+							+ resRole + '&noCache=' + new Date().getTime(),
+					area : [ '800px', '500px' ],
+					btn : [ '确定', '关闭' ],
+					maxmin : true,
+					yes : function(index) {
+						//获取单位数据 
+						var res = window.parent["layui-layer-iframe" + index]
+								.getRoleData();
+						if (res == null) {
+							window.parent.layer.alert("请选择部门", {
+								icon : 6
+							});
+						} else {
+							$("#userRolesName").text("");
+							resRole=[];
+							for ( var i in res) {
+								if(res[i].id!=undefined){
+								
+									var data = "<li id=\""+res[i].id+"\"><span style=\"color:black\">"
+									+ res[i].name
+									+ "<a class=\"fa fa-times \" onclick=\"delRoleId('"
+									+ res[i].id + "')\" ></a></span></li>";
+									$("#userRolesName").append(data);
+									resRole.push(res[i].id);
+								}
+
+							}
+							$("#userRolesMes").text("");
+							window.parent.layer.close(index);
+						}
+					}
+				});
+	}
+	
+	//删除角色
+	function delRoleId(id) {
+		if (resRole != null) {
+			for (var i = 0; i < resRole.length; i++) {
+				if (id == resRole[i]) {
+					//从数据中移除项
+					resRole.splice(i, 1);
+					//展示li标签删除
+					$("#userRolesName li[id=" + id + "]").remove();
+				}
+			}
+		}
+	}
+	
+	//选择部门
+	function selDepartment() {
+
+		var index = window.parent.layer
+				.open({
+					title : '选择部门',
+					type : 2,
+					content : '../../partials/select-section-nolower.html?noCache=' + new Date().getTime(),
+					area : [ '800px', '500px' ],
+					btn : [ '确定', '关闭' ],
+					maxmin : true,
+					yes : function(index) {
+						//获取单位数据 
+						var res = window.parent["layui-layer-iframe" + index]
+								.getData();
+						if (res == null) {
+							window.parent.layer.alert("请选择部门", {
+								icon : 6
+							});
+						} else {
+							$("#sectionName").val(res.name);
+							resDep.id = res.id;
+							$("#departmentIdMes").text("");
+							window.parent.layer.close(index);
+						}
+					}
+				});
+	}
+
+	//选择管理范围 
+	function openSelectManageSectionModal() {
+
+		var index = window.parent.layer
+				.open({
+					title : '选择管理范围',
+					type : 2,
+					content : '../../module/organization/select-manage-section-modal.html?back='
+							+ restManageSection
+							+ '&noCache='
+							+ new Date().getTime(),
+					area : [ '800px', '500px' ],
+					btn : [ '确定', '关闭' ],
+					maxmin : true,
+					yes : function(index) {
+						//获取单位数据 
+						var manageSectionIndex = window.parent["layui-layer-iframe"
+								+ index].getData();
+
+						//解决不能执行已释放的 Script 的代码bug
+						var manageSection = cloneObj(manageSectionIndex);
+						if (manageSection == null) {
+							window.parent.layer.alert("选择管理范围", {
+								icon : 6
+							});
+						} else {
+
+							for (var i = 0; i < manageSection.length; i++) {
+								for (var j = 0; j < restManageSection.length; j++) {
+									if (restManageSection[j].roleId == manageSection[i].roleId
+											&& restManageSection[j].departmentId == manageSection[i].departmentId) {
+										$("#manageDepartmentsName li[id="
+														+ restManageSection[j].id
+														+ "]").remove();
+										restManageSection.splice(j, 1);
+										j--;
+									}
+								}
+								var id_new = generateUUID();
+								manageSection[i].id = id_new;
+								var data = "<li id=\""+id_new+"\"><span style=\"color:black\">"
+										+ manageSection[i].backData
+										+ "<a class=\"fa fa-times \" onclick=\"delMdId('"
+										+ manageSection[i].id
+										+ "')\" ></a></span></li>";
+								$("#manageDepartmentsName").append(data);
+								delete manageSection[i].backData;
+								restManageSection.push(manageSection[i]);
+							}
+
+						}
+						window.parent.layer.close(index);
+
+					}
+
+				});
+	}
+
+	//删除管理范围
+	function delMdId(id) {
+		if (restManageSection != null) {
+			for (var i = 0; i < restManageSection.length; i++) {
+				if (id == restManageSection[i].id) {
+					//从数据中移除项
+					restManageSection.splice(i, 1);
+					i--;
+					//展示li标签删除
+					$("#manageDepartmentsName li[id=" + id + "]").remove();
+				}
+			}
+		}
+	}
+
+	function certificateTypeChange() {
+		var type = parseInt($("#certificateType").val());
+		showTr(type);
+
+	}
+
+	//用户类型触发
+	function showTr(type) {
+		clearCert();
+		if (0 !=type ) {
+			$("#validity").show();
+			$("#bundling").show();
+		} else {
+			$("#validity").hide();
+			$("#bundling").hide();
+		}
+		if (2== type) {
+			$("#certPwdTr").show();
+		} else {
+			$("#certPwdTr").hide();
+		}
+		if (4 ==type ) {
+			$("#certRoadTr").show();
+		} else {
+			$("#certRoadTr").hide();
+		}
+	}
+
+	function clearCert() {
+		$("#certSn").val("");
+		$("#certDn").val("");
+		$("#certValidityBegin").val("");
+		$("#certValidityEnd").val("");
+	}
+
+	/**获取证书信息
+	 * @ngdoc method
+	 * @name getCertInfo
+	 * @methodOf app.service:MakeSealService
+	 * @description
+	 * 获取证书信息（SN、DN、公钥、证书有效期）
+	 * @param {number} value: 1 ukey中证书，2 pfx证书，3 IE证书，4 Cert证书
+	 * @param {Array} params: [pfx或cert证书路径,pfx证书密码]
+	 * @returns {Object} 证书信息:{...}
+	 */
+	function getCertInfo() {
+		var value = $("#certificateType").val();
+		var file = "";
+		if (value == "2") {
+			file = document.getElementById('pfxRoad');
+		} else if (value == "4") {
+			file = document.getElementById('certFile');
+		}
+		var certInfo = {
+			sn : "",
+			dn : "",
+			content : "",
+			beginTime : 0,
+			endTime : 0,
+			error : false,
+			message : null
+		};
+		var certInfos={};
+
+		var path="";
+		if(file.value==null||file.value==""){
+
+		}else{
+			path = getFilePath(file);
+		}
+		var params = [ path, $("#certPwd").val() ];
+		if(value == "2"){
+			if (!checkStr(params[0])) {
+				certInfo.error = true;
+				certInfo.message = "请选择pfx文件！";
+				return certInfo;
+			} else if (!checkStr(params[1])) {
+				certInfo.error = true;
+				certInfo.message = "请输入证书密码！";
+				return certInfo;
+			}
+			certInfos["pfxContent"]=certBase64;
+			certInfos["pwd"]=params[1];
+			certInfos["type"]="2";
+			$.ajax({
+				type : "POST",
+				url : urlPath + "/getCertInfo?noCache="
+						+ new Date().getTime(),
+				data : JSON.stringify(certInfos),
+				dataType : "json",
+				async:false,
+				contentType:"application/json",
+				success : function(data) {
+					certInfo.sn = data.sn;
+					certInfo.dn = data.dn;
+					certInfo.content = data.content;
+					certInfo.beginTime = data.beginTime;
+					certInfo.endTime = data.endTime;
+				},
+				error : function() {
+					msg("校验失败");
+				}
+			});
+
+		}else{
+			//创建控件对象
+			var msObj = new MakeSeal("getKey");
+			//初始化控件
+			msObj.Init({
+				id : 'DMakeSealV6',
+				width : '0px',
+				height : '0px',
+				version : '1,1,2,0'
+			});
+
+			try {
+				switch (value) {
+					case "1"://key证书
+						certInfo.sn = msObj.GetInfoFromKey().keysn;
+						certInfo.dn = msObj.GetInfoFromKey().keydn;
+						certInfo.content = msObj.GetInfoFromKey().keycert;
+						certInfo.beginTime = msObj.GetInfoFromKey().begintime;
+						certInfo.endTime = msObj.GetInfoFromKey().endtime;
+						break;
+					case "3"://IE证书
+						var certstr = msObj.GetIETwo();
+						certInfo.sn = certstr.keysn;
+						certInfo.dn = certstr.keydn;
+						certInfo.content = certstr.keycert;
+						certInfo.beginTime = certstr.begintime;
+						certInfo.endTime = certstr.endtime;
+						window.event? window.event.cancelBubble = true : (e.cancelBubble = true);
+						break;
+					case "4"://cert证书
+						if (!checkStr(params[0])) {
+							certInfo.error = true;
+							certInfo.message = "请选择cert文件！";
+							return certInfo;
+						}
+						var certstr = msObj.GetInfoFromCert(params[0]);
+						certInfo.sn = certstr.keysn;
+						certInfo.dn = certstr.keydn;
+						certInfo.content = certstr.keycert;
+						certInfo.beginTime = certstr.begintime;
+						certInfo.endTime = certstr.endtime;
+						break;
+				}
+			} catch (e) {
+				alert("控件初始化失败，检查控件是否安装或浏览器是否支持！");
+				return;
+
+			}
+			certInfo.sn = checkStr(certInfo.sn) ? certInfo.sn : null;
+			if (certInfo.sn == null) {
+				alert("获取key信息失败，请检查key是否插好");
+			}
+			certInfo.beginTime = checkStr(certInfo.beginTime) ? certInfo.beginTime
+					: null;
+			certInfo.endTime = checkStr(certInfo.endTime) ? certInfo.endTime : null;
+		}
+		if (certInfo.message != null) {
+			$("#certMes").val(certInfo.message);
+		}
+		return certInfo;
+	}
+
+	 // 检测证书信息是否符合要求
+	function checkCert() {
+		var certType=$("#certificateType").val();
+		var certInfo = getCertInfo();
+		var dataPut={};
+		var id_=$("#id").val();
+		if(checkStr(id_)){
+			dataPut={"certDn":certInfo.dn,"certSn":certInfo.sn,userId:id_};
+		}else{
+			dataPut={"certDn":certInfo.dn,"certSn":certInfo.sn};
+		}
+		if (certInfo.message == null) {
+			$.ajax({
+				type : "GET",
+				url : urlPath + "/user/existUserCert?noCache="
+						+ new Date().getTime(),
+				data : dataPut,
+				contentType : "application/json",
+				success : function(data) {
+					if (data.certSn && data.certDn) {
+						certInfoValitify = certInfo;
+						$("#certSn").val(certInfo.sn);
+						$("#certDn").val(certInfo.dn);
+						$("#certPublicKey").val(certInfo.content);
+						$("#certValidityBegin").val(certInfo.beginTime);
+						$("#certValidityEnd").val(certInfo.endTime);
+					}else{
+						msg("证书已绑定其他用户,请更换其他证书");
+ 						$("#certSn").val("");
+						$("#certDn").val("");
+						$("#certPublicKey").val("");
+						$("#certValidityBegin").val(null);
+						$("#certValidityEnd").val(null); 
+					}
+				},
+				error : function() {
+					msg("校验失败");
+				}
+			});
+		} else {
+			alert(certInfo.message);
+		}
+	}
+
+	 
+
+
+	function getData() {
+		if (check()) {
+			var data = [];
+			var dataUser = {};
+			var currentUserData = currentUser(); //当前登陆人信息
+			var dataForm = $("#userForm").getData(); //获取输入的表单数据
+
+			if (dataForm.id != null && dataForm.id != "") {
+				dataUser.id = dataForm.id;
+				dataUser.clientType = 0;
+				dataUser.createdAt = dataForm.createdAt;
+				dataUser.createdBy = dataForm.createdBy;
+				dataUser.passwordUpdatedAt = dataForm.pwdUpdatedAt;
+				dataUser.lastReadMessageTime = 0;
+				dataUser.currentRole = dataForm.currentRole;
+				dataUser.text1 = null;
+				dataUser.text2 = null;
+				dataUser.otherId = null;
+			} else {
+				dataUser.section = null;
+			}
+			if (dataForm.birthday == "") {
+				dataUser.birthday = null;
+			} else {
+				dataUser.birthday = timeConvert(dataForm.birthday);
+			}
+			dataUser.createdBy = null;
+
+			dataUser.email = getDataInit(dataForm.email); //email
+
+			dataUser.loginId = dataForm.loginId;
+			dataUser.mobile = dataForm.mobile;
+
+			dataUser.userPwd = null; //password需要加密
+
+			dataUser.password = desEncrypt(dataForm.userPwd); //password需要加密
+
+			dataUser.status = parseInt(dataForm.status); //是否启用
+
+			dataUser.departmentId = resDep; //获取当前选择到的部门    json串形式
+			dataUser.userRoles = resRole; //角色
+
+			var restSection = [];
+			for (var i = 0; i < restManageSection.length; i++) {
+				var md = {};
+				md.type = restManageSection[i].type;
+				md.roleId = restManageSection[i].roleId;
+				md.departmentId = restManageSection[i].departmentId;
+				restSection.push(md);
+			}
+			dataUser.manageDepartments = restSection; //管理部门
+
+			dataUser.workTelephone = getDataInit(dataForm.workTelephone); //工作电话		
+			dataUser.certificateType = dataForm.certificateType;//绑定的类型
+
+			var userType = 0; //保存userType
+
+			allUserType = document.getElementsByName("allUserType");
+
+			for (var i = 0; i < allUserType.length; i++) {
+
+				var value = parseInt(allUserType[i].value);
+				if (allUserType[i].checked) { //如果被选中9
+					userType = userType | value;
+
+				} else {
+
+					if (userType & value == value) {
+						userType = userType ^ value;
+
+					}
+				}
+			}
+			dataUser.userType = userType; //客户端类型
+
+			
+			
+			
+			if("0" ==dataForm.certificateType){
+				clearCert();
+			}else{
+				dataUser.certDn = dataForm.certDn;//证书DN
+				dataUser.certSn = dataForm.certSn;//序列号
+				dataUser.certValidityBegin = timeConvert(dataForm.certValidityBegin);
+				dataUser.certValidityEnd = timeConvert(dataForm.certValidityEnd);
+			}
+			dataUser.certContent = dataForm.certContent;
+			//证书信息
+			dataUser.certPublicKey = dataForm.certPublicKey;
+
+			dataUser.certPassword = dataForm.certPwd;
+
+			dataUser.gender = parseInt(dataForm.gender);
+			dataUser.name = dataForm.name;
+
+			return dataUser;
+		}
+	}
+	
+	//校验输入项是否正确
+	function check() {
+		if ($("#loginId").val() == '') {
+			$("#loginIdMes").text('输入不可为空！');
+		} else {
+			$("#loginIdMes").text("");
+		}
+
+		if ($("#name").val() == '') {
+			$("#nameMes").text('输入不可为空！');
+		} else {
+			$("#nameMes").text("");
+		}
+
+		if ($("#userPwd").val() == '') {
+			$("#pwdMes").text('输入不可为空！');
+		} else {
+			$("#pwdMes").text("");
+		}
+
+		if ($("#confirmPwd").val() == '') {
+			$("#confirmPwdMes").text('请再次输入密码');
+		} else {
+			$("#confirmPwdMes").text("");
+		}
+		if ($("#sectionName").val() == '') {
+			$("#departmentIdMes").text('请选择部门!');
+		} else {
+			$("#departmentIdMes").text("");
+		}
+		if (resRole.length == 0) {
+			$("#userRolesMes").text('请选择角色!');
+		} else {
+			$("#userRolesMes").text("");
+		}
+
+		if (!($("#bundling").is(":hidden"))) {
+			if ($("#certSn").val() == '') {
+				$("#certMes").text('请先获取证书信息!');
+			} else {
+				$("#certMes").text("");
+			}
+		}
+
+		var flag = true;
+
+		if ($("#loginIdMes").text() != "" || $("#nameMes").text() != ""
+				|| $("#pwdMes").text() != ""
+				|| $("#confirmPwdMes").text() != ""
+				|| $("#departmentIdMes").text() != ""
+				|| $("#userRolesMes").text() != ""
+				|| $("#certMes").text() != "") {
+			flag = false;
+		}
+		return flag;
+	}
+	
+	
+	//检查用户名是否符合要求
+	function addValidateOptions() {
+		var res = {};
+		res['field'] = 'loginId';
+		res['value'] = $("#loginId").val();
+
+		if (res['value'].length > 60) {
+			$("#loginIdMes").html("长度不能超过60");
+		} else if (res['value'].length == 0) {
+			$("#loginIdMes").html("输入不能为空");
+		} else {
+			$.ajax({
+				type : "GET",
+				url : urlPath + "/user/exist?noCache=" + new Date().getTime(),
+				data : res,
+				contentType : "application/json",
+				dataType : "json",
+				success : function(retdata) {
+					$("#loginIdMes").html("");
+				},
+				error : function(xmlhttp, textStatus, errorThrown) {
+					$("#loginId").val(null);
+					$("#loginIdMes").html(
+							($.parseJSON(xmlhttp.responseText)).message);
+				}
+			});
+		}
+
+	}
+
+	//检查姓名是否超出长度
+	function nameValidate() {
+		if ($("#name").val().length > 20) {
+			$("#nameMes").html("长度不能超过20");
+		} else if ($("#name").val().length == 0) {
+			$("#nameMes").html("输入不能为空");
+		} else {
+			$("#nameMes").html("");
+		}
+	}
+
+	//检查密码是否符合规则
+	function passwordValidate() {
+/* 		if ($("#userPwd").val().length == 0) {
+			$("#pwdMes").html("输入不能为空");
+		} else { */
+			var regx = /^(?:(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])).{8,20}$/;
+			var result = regx.test($("#userPwd").val());
+			if (result) {
+				$("#pwdMes").html("");
+			} else {
+				$("#userPwd").val(null);
+				$("#pwdMes").html("长度必须在8-20位且包含大小写字母，数字");
+			}
+		//}
+	}
+
+	//校验邮箱
+	function emailValidate() {
+		var re = '^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$';
+		var reg = new RegExp(re);
+		if ($("#email").val().length > 60) {
+			$("#emailMes").html("长度不能超过60");
+			$("#email").val(null);
+		} else {
+			var result = reg.test($("#email").val());
+			if (result) {
+				$("#emailMes").html("");
+			} else {
+				$("#emailMes").html("邮箱格式不正确");
+				$("#email").val(null);
+			}
+		}
+	}
+
+	//校验手机号
+	function mobileValidate() {
+		var re = '\\d{11}?';
+		var reg = new RegExp(re);
+		if ($("#mobile").val().length > 11) {
+			$("#mobileMes").html("长度不能超过11");
+			$("#mobile").val(null);
+		} else {
+			var result = reg.test($("#mobile").val());
+			if (result) {
+				$("#mobileMes").html("");
+			} else {
+				$("#mobileMes").html("手机格式不正确");
+				$("#mobile").val(null);
+			}
+		}
+	}
+
+	//校验工作电话
+	function workTelephoneValidate() {
+		var re = '\\d{5}\\d*';
+		var reg = new RegExp(re);
+		if ($("#workTelephone").val().length > 0) {
+			var result = reg.test($("#workTelephone").val());
+			if (result) {
+				$("#workTelephoneMes").html("");
+			} else {
+				$("#workTelephoneMes").html("工作电话格式不正确");
+				$("#workTelephone").val(null);
+			}
+		}
+	}
+
+	function confirmPwdValidate() {
+		if ($("#userPwd").val() != $("#confirmPwd").val()) {
+			$("#confirmPwd").val(null);
+			$("#confirmPwdMes").text("两次输入密码不一致");
+		} else {
+			$("#confirmPwdMes").text("");
+			$("#pwdMes").text("");
+		}
+	}
+	
+	
+	 //工具类开始
+	function checkStr(str) {
+		if (str === null || str == '' || str === undefined) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	function getFilePath(file) {
+		if (file) {
+			if (file.files) {
+				var x = file.files;
+				var reader = new FileReader();
+				reader.readAsDataURL(x[0]);
+				reader.onload = (function(e) {
+					if ($("#certificateType").val() == 2) {
+						$("#certContent").val(
+								e.target.result.split('base64,')[1]);
+					}
+				});
+			} else {
+			}
+			return file.value;
+		} else {
+			return '';
+		}
+	}
+	
+	function timeConvert(date) {
+		if (date == null || date == "") {
+			return 0;
+		}
+
+		date = date.substring(0, date.length);
+		date = date.replace(/-/g, '/');
+		if (date.length < 17) {
+			date = date + " 00:00:00";
+		}
+		return (new Date(date).getTime()) / 1000;
+	}
+
+	//重写toLocaleString 
+	Date.prototype.toLocaleString = function() {
+		var currMonth = (this.getMonth() + 1) < 10 ? '0'
+				+ (this.getMonth() + 1) : (this.getMonth() + 1);
+		var currDate = this.getDate() < 10 ? '0' + this.getDate() : this
+				.getDate();
+		var currHours = this.getHours() < 10 ? '0' + this.getHours() : this
+				.getHours();
+		var currMinutes = this.getMinutes() < 10 ? '0' + this.getMinutes()
+				: this.getMinutes();
+		var currSeconds = this.getSeconds() < 10 ? '0' + this.getSeconds()
+				: this.getSeconds();
+		return this.getFullYear() + "-" + currMonth + "-" + currDate + " "
+				+ currHours + ":" + currMinutes + ":" + currSeconds;
+	};
+
+	function getDataInit(data) {
+		if (data == "") {
+			return null;
+		} else {
+			return data;
+		}
+	}
+
+	//克隆数组，只克隆数值
+	function cloneObj(obj) {
+		var newObj = [];
+
+		for (var i = 0; i < obj.length; i++) {
+			var childObj = {};
+
+			var obj1 = obj[i];
+
+			for ( var key in obj1) {
+				var val = obj1[key];
+				childObj[key] = typeof val === 'object' ? cloneObj(val) : val;
+			}
+			newObj.push(childObj);
+		}
+		return newObj;
+	}
+	
+	//生成随机UUID
+	function generateUUID() {
+		var d = new Date().getTime();
+		var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		  var r = (d + Math.random()*16)%16 | 0;
+		  d = Math.floor(d/16);
+		  return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+		});
+		return uuid;
+	};	
+	
+	
+	//加密登录人密码
+	function desEncrypt(data) {
+		getProofCode();
+		data1 = CryptoJS.SHA256(data).toString(CryptoJS.enc.HEX);
+		keyHex = CryptoJS.enc.Utf8.parse(proofCode);
+		var encrypted = CryptoJS.DES.encrypt(data1, keyHex, {
+			mode : CryptoJS.mode.ECB,
+			padding : CryptoJS.pad.Pkcs7
+		});
+		return encrypted.toString();
+	}
+
+	//获得密钥
+	function getProofCode() {
+		$.ajax({
+			type : "GET",
+			url : urlPath + '/getProofCode?noCache=' + new Date().getTime(),
+			contentType : "text/html",
+			async : false,
+			success : function(retdata) {
+				proofCode = retdata;
+			},
+			error : function(xmlhttp, textStatus, errorThrown) {
+
+			}
+		});
+	}
+	
+	//获取页面传参
+	function getUrlParam(name) {
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象  
+		var r = window.location.search.substr(1).match(reg); //匹配目标参数  
+		if (r != null) {
+			return unescape(r[2]); //返回参数值 
+		} else {
+			return null;
+		}
+	}
+	//工具类结束
+
+
+	function selectCertFile(id){
+		var filePath=$("#"+id).val();
+		if(IEVersion()==-1){
+			fileToBase64(id);
+		}else{
+			if(IEVersion()>9){
+				fileToBase64(id);
+			}else{
+				fileToBase64_ie(id);
+			}
+		}
+	}
+
+	/**
+	 *文件转base64(ie9以上)
+	 */
+	function fileToBase64(id){
+		var fileObj = $("#"+id+"")[0].files[0];
+		var fileName=$("#"+id+"").val();
+		var reader = new FileReader();
+		reader.readAsDataURL(fileObj);
+		reader.onload = function(theFile) {
+			certBase64+=theFile.target.result;
+			certBase64=certBase64.slice(certBase64.lastIndexOf(';base64,')+8);
+			return certBase64;//获取文件的base64码
+		};
+	}
+	/**
+	 *ie9下文件转base64
+	 */
+	function fileToBase64_ie(id){//路径和文档类型
+		var filePath = $("#"+id).val();
+		var realPath, xmlHttp, xml_dom, tmpNode, imgData;
+		realPath =filePath;//获取文件的真实本地路径.
+		var reader = new ActiveXObject("ADODB.Stream");
+		reader.charset = "UTF-8";
+		reader.Type=1;
+		reader.Open();
+		reader.LoadFromFile(realPath);
+		var fileText="";
+		while(!reader.EOS){//是否结束
+			fileText=reader.Read();
+		}
+		reader.Close();
+		xml_dom = new ActiveXObject("MSXML2.DOMDocument");
+		tmpNode = xml_dom.createElement("tmpNode");
+		tmpNode.dataType = "bin.base64";
+		tmpNode.nodeTypedValue = fileText;
+		certBase64=tmpNode.text.replace(/\n/g,"");
+		return certBase64;
+	}
+
+	/**
+	 *判断游览器版本
+	 */
+	function IEVersion() {
+		var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串
+		var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
+		var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
+		var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf("rv:11.0") > -1;
+		if(isIE) {
+			var reIE = new RegExp("MSIE (\\d+\\.\\d+);");
+			reIE.test(userAgent);
+			var fIEVersion = parseFloat(RegExp["$1"]);
+			if(fIEVersion == 7) {
+				return 7;
+			} else if(fIEVersion == 8) {
+				return 8;
+			} else if(fIEVersion == 9) {
+				return 9;
+			} else if(fIEVersion == 10) {
+				return 10;
+			} else {
+				return 6;//IE版本<=7
+			}
+		} else if(isEdge) {
+			return -1;//edge
+		} else if(isIE11) {
+			return 11; //IE11
+		}else{
+			return -1;//不是ie浏览器
+		}
+	}
+</script>
+</html>
