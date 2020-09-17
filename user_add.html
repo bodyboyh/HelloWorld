@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -60,6 +60,7 @@
 <script src="../../shared/crypto-js/crypto-js.js" type="text/javascript"></script>
 <script src="../../shared/ocx/makeseal.js" type="text/javascript"></script>
 	<script src="../../shared/js/json2.js" type="text/javascript"></script>
+
 </head>
 <style type="text/css">
 .error {
@@ -120,7 +121,7 @@ li {
 				<tr style="display:none" id="certPwdTr">
 					<td class="tdtitle" align="right">pfx路径：</td>
 					<td><input type="file" id="pfxRoad" name="pfxRoad"
-						class="form_input" onchange="selectCertFile('pfxRoad');"></td>
+						class="form_input"></td>
 					<td class="tdtitle" align="right">证书密码：</td>
 					<td><input type="text" id="certPwd" name="certPwd"
 						class="form_input"></td>
@@ -280,7 +281,6 @@ li {
 		error : false,
 		message : null
 	};
-	var certBase64="";
 
 	$(document).ready(function() {
 		//用户初始化数据
@@ -713,6 +713,25 @@ li {
 		} else if (value == "4") {
 			file = document.getElementById('certFile');
 		}
+		
+		var path="";
+		if(file.value==null||file.value==""){
+			
+		}else{
+			path = getFilePath(file);
+		}
+		var params = [ path, $("#certPwd").val() ];
+
+		//创建控件对象
+		var msObj = new MakeSeal("getKey");
+		//初始化控件
+		msObj.Init({
+			id : 'DMakeSealV6',
+			width : '0px',
+			height : '0px',
+			version : '1,1,2,0'
+		});
+
 		var certInfo = {
 			sn : "",
 			dn : "",
@@ -722,114 +741,80 @@ li {
 			error : false,
 			message : null
 		};
-		var certInfos={};
 
-		var path="";
-		if(file.value==null||file.value==""){
-
-		}else{
-			path = getFilePath(file);
-		}
-		var params = [ path, $("#certPwd").val() ];
-		if(value == "2"){
-			if (!checkStr(params[0])) {
-				certInfo.error = true;
-				certInfo.message = "请选择pfx文件！";
-				return certInfo;
-			} else if (!checkStr(params[1])) {
-				certInfo.error = true;
-				certInfo.message = "请输入证书密码！";
-				return certInfo;
-			}
-			certInfos["pfxContent"]=certBase64;
-			certInfos["pwd"]=params[1];
-			certInfos["type"]="2";
-			$.ajax({
-				type : "POST",
-				url : urlPath + "/getCertInfo?noCache="
-						+ new Date().getTime(),
-				data : JSON.stringify(certInfos),
-				dataType : "json",
-				async:false,
-				contentType:"application/json",
-				success : function(data) {
-					certInfo.sn = data.sn;
-					certInfo.dn = data.dn;
-					certInfo.content = data.content;
-					certInfo.beginTime = data.beginTime;
-					certInfo.endTime = data.endTime;
-				},
-				error : function() {
-					msg("校验失败");
+		try {
+			switch (value) {
+			case "1"://key证书
+				certInfo.sn = msObj.GetInfoFromKey().keysn;
+				certInfo.dn = msObj.GetInfoFromKey().keydn;
+				certInfo.content = msObj.GetInfoFromKey().keycert;
+				certInfo.beginTime = msObj.GetInfoFromKey().begintime;
+				certInfo.endTime = msObj.GetInfoFromKey().endtime;
+				break;
+			case "2"://pfx证书
+				if (!checkStr(params[0])) {
+					certInfo.error = true;
+					certInfo.message = "请选择pfx文件！";
+					return certInfo;
+				} else if (!checkStr(params[1])) {
+					certInfo.error = true;
+					certInfo.message = "请输入证书密码！";
+					return certInfo;
 				}
-			});
-
-		}else{
-			//创建控件对象
-			var msObj = new MakeSeal("getKey");
-			//初始化控件
-			msObj.Init({
-				id : 'DMakeSealV6',
-				width : '0px',
-				height : '0px',
-				version : '1,1,2,0'
-			});
-
-			try {
-				switch (value) {
-					case "1"://key证书
-						certInfo.sn = msObj.GetInfoFromKey().keysn;
-						certInfo.dn = msObj.GetInfoFromKey().keydn;
-						certInfo.content = msObj.GetInfoFromKey().keycert;
-						certInfo.beginTime = msObj.GetInfoFromKey().begintime;
-						certInfo.endTime = msObj.GetInfoFromKey().endtime;
-						break;
-					case "3"://IE证书
-						var certstr = msObj.GetIETwo();
-						certInfo.sn = certstr.keysn;
-						certInfo.dn = certstr.keydn;
-						certInfo.content = certstr.keycert;
-						certInfo.beginTime = certstr.begintime;
-						certInfo.endTime = certstr.endtime;
-						window.event? window.event.cancelBubble = true : (e.cancelBubble = true);
-						break;
-					case "4"://cert证书
-						if (!checkStr(params[0])) {
-							certInfo.error = true;
-							certInfo.message = "请选择cert文件！";
-							return certInfo;
-						}
-						var certstr = msObj.GetInfoFromCert(params[0]);
-						certInfo.sn = certstr.keysn;
-						certInfo.dn = certstr.keydn;
-						certInfo.content = certstr.keycert;
-						certInfo.beginTime = certstr.begintime;
-						certInfo.endTime = certstr.endtime;
-						break;
+				var certstr = msObj.GetInfoFromPfx(params[0], params[1]);
+				certInfo.sn = certstr.keysn;
+				certInfo.dn = certstr.keydn;
+				certInfo.content = certstr.keycert;
+				certInfo.beginTime = certstr.begintime;
+				certInfo.endTime = certstr.endtime;
+				break;
+			case "3"://IE证书
+				var certstr = msObj.GetIETwo();
+				certInfo.sn = certstr.keysn;
+				certInfo.dn = certstr.keydn;
+				certInfo.content = certstr.keycert;
+				certInfo.beginTime = certstr.begintime;
+				certInfo.endTime = certstr.endtime;
+				window.event? window.event.cancelBubble = true : (e.cancelBubble = true);
+				break;
+			case "4"://cert证书
+				if (!checkStr(params[0])) {
+					certInfo.error = true;
+					certInfo.message = "请选择cert文件！";
+					return certInfo;
 				}
-			} catch (e) {
-				alert("控件初始化失败，检查控件是否安装或浏览器是否支持！");
-				return;
+				var certstr = msObj.GetInfoFromCert(params[0]);
+				certInfo.sn = certstr.keysn;
+				certInfo.dn = certstr.keydn;
+				certInfo.content = certstr.keycert;
+				certInfo.beginTime = certstr.begintime;
+				certInfo.endTime = certstr.endtime;
+				break;
+			}
+		} catch (e) {
+			alert("控件初始化失败，检查控件是否安装或浏览器是否支持！");
+			return;
 
-			}
-			certInfo.sn = checkStr(certInfo.sn) ? certInfo.sn : null;
-			if (certInfo.sn == null) {
-				alert("获取key信息失败，请检查key是否插好");
-			}
-			certInfo.beginTime = checkStr(certInfo.beginTime) ? certInfo.beginTime
-					: null;
-			certInfo.endTime = checkStr(certInfo.endTime) ? certInfo.endTime : null;
 		}
 		if (certInfo.message != null) {
 			$("#certMes").val(certInfo.message);
 		}
+		certInfo.sn = checkStr(certInfo.sn) ? certInfo.sn : null;
+		if (certInfo.sn == null) {
+			alert("获取key信息失败，请检查key是否插好");
+		}
+
+		certInfo.beginTime = checkStr(certInfo.beginTime) ? certInfo.beginTime
+				: null;
+		certInfo.endTime = checkStr(certInfo.endTime) ? certInfo.endTime : null;
 		return certInfo;
 	}
 
-	 // 检测证书信息是否符合要求
+	 //检测证书信息是否符合要求
 	function checkCert() {
 		var certType=$("#certificateType").val();
 		var certInfo = getCertInfo();
+		console.log(certInfo);
 		var dataPut={};
 		var id_=$("#id").val();
 		if(checkStr(id_)){
@@ -837,6 +822,7 @@ li {
 		}else{
 			dataPut={"certDn":certInfo.dn,"certSn":certInfo.sn};
 		}
+        console.log(dataPut);
 		if (certInfo.message == null) {
 			$.ajax({
 				type : "GET",
@@ -1284,90 +1270,5 @@ li {
 		}
 	}
 	//工具类结束
-
-
-	function selectCertFile(id){
-		var filePath=$("#"+id).val();
-		if(IEVersion()==-1){
-			fileToBase64(id);
-		}else{
-			if(IEVersion()>9){
-				fileToBase64(id);
-			}else{
-				fileToBase64_ie(id);
-			}
-		}
-	}
-
-	/**
-	 *文件转base64(ie9以上)
-	 */
-	function fileToBase64(id){
-		var fileObj = $("#"+id+"")[0].files[0];
-		var fileName=$("#"+id+"").val();
-		var reader = new FileReader();
-		reader.readAsDataURL(fileObj);
-		reader.onload = function(theFile) {
-			certBase64+=theFile.target.result;
-			certBase64=certBase64.slice(certBase64.lastIndexOf(';base64,')+8);
-			return certBase64;//获取文件的base64码
-		};
-	}
-	/**
-	 *ie9下文件转base64
-	 */
-	function fileToBase64_ie(id){//路径和文档类型
-		var filePath = $("#"+id).val();
-		var realPath, xmlHttp, xml_dom, tmpNode, imgData;
-		realPath =filePath;//获取文件的真实本地路径.
-		var reader = new ActiveXObject("ADODB.Stream");
-		reader.charset = "UTF-8";
-		reader.Type=1;
-		reader.Open();
-		reader.LoadFromFile(realPath);
-		var fileText="";
-		while(!reader.EOS){//是否结束
-			fileText=reader.Read();
-		}
-		reader.Close();
-		xml_dom = new ActiveXObject("MSXML2.DOMDocument");
-		tmpNode = xml_dom.createElement("tmpNode");
-		tmpNode.dataType = "bin.base64";
-		tmpNode.nodeTypedValue = fileText;
-		certBase64=tmpNode.text.replace(/\n/g,"");
-		return certBase64;
-	}
-
-	/**
-	 *判断游览器版本
-	 */
-	function IEVersion() {
-		var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串
-		var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
-		var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
-		var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf("rv:11.0") > -1;
-		if(isIE) {
-			var reIE = new RegExp("MSIE (\\d+\\.\\d+);");
-			reIE.test(userAgent);
-			var fIEVersion = parseFloat(RegExp["$1"]);
-			if(fIEVersion == 7) {
-				return 7;
-			} else if(fIEVersion == 8) {
-				return 8;
-			} else if(fIEVersion == 9) {
-				return 9;
-			} else if(fIEVersion == 10) {
-				return 10;
-			} else {
-				return 6;//IE版本<=7
-			}
-		} else if(isEdge) {
-			return -1;//edge
-		} else if(isIE11) {
-			return 11; //IE11
-		}else{
-			return -1;//不是ie浏览器
-		}
-	}
 </script>
 </html>
